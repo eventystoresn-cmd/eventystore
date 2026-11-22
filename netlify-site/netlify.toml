@@ -1,0 +1,11 @@
+# Façade Netlify : toutes les requêtes sont relayées (proxy, statut 200) vers l'application Flask hébergée sur Render.
+# Netlify ne peut pas exécuter l'application elle-même (serveur Python + base de données).
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "https://eventystore.onrender.com/:splat"
+  status = 200
+  force = true
+  headers = {X-Forwarded-Host = "eventystore.netlify.app", X-Forwarded-Proto = "https"}

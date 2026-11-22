@@ -61,6 +61,10 @@ class Config:
     DEMO_AUTOSEED = _bool("DEMO_AUTOSEED", False)
     AUTO_VERIFY_EMAIL = _bool("AUTO_VERIFY_EMAIL", False)
 
+    # Derrière une façade (ex. Netlify) : lit X-Forwarded-Host / X-Forwarded-Proto pour que CSRF, cookies et liens
+    # utilisent le domaine public. À n'activer que si l'application est servie derrière un proxy de confiance.
+    TRUST_FORWARDED_HOST = _bool("TRUST_FORWARDED_HOST", False)
+
     # SMS : aucun fournisseur branché par défaut (point d'extension services/notifications.py).
     SMS_PROVIDER = os.environ.get("SMS_PROVIDER", "")
 
