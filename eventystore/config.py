@@ -57,6 +57,10 @@ class Config:
     SMTP_TLS = _bool("SMTP_TLS", True)
     MAIL_FROM = os.environ.get("MAIL_FROM", "EventyStore <no-reply@eventystore.sn>")
 
+    # Démo publique : crée la base + données FICTIVES au démarrage ; valide les e-mails sans SMTP.
+    DEMO_AUTOSEED = _bool("DEMO_AUTOSEED", False)
+    AUTO_VERIFY_EMAIL = _bool("AUTO_VERIFY_EMAIL", False)
+
     # SMS : aucun fournisseur branché par défaut (point d'extension services/notifications.py).
     SMS_PROVIDER = os.environ.get("SMS_PROVIDER", "")
 

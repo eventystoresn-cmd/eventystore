@@ -27,6 +27,9 @@ def send_verification(user):
     send_email(user.email, "Confirmez votre adresse e-mail — EventyStore",
                f"Bonjour {user.first_name},\n\nBienvenue sur EventyStore. Confirmez votre adresse e-mail en cliquant sur ce lien "
                f"(valable 3 jours) :\n{link}\n\nSi vous n'êtes pas à l'origine de cette inscription, ignorez ce message.", user.id)
+    # Démo sans SMTP : on valide directement l'adresse (l'e-mail reste consultable dans la boîte d'envoi).
+    if current_app.config.get("AUTO_VERIFY_EMAIL") and not current_app.config.get("SMTP_HOST") and not user.email_verified_at:
+        user.email_verified_at = utcnow()
 
 
 def _unique_slug(name):

@@ -43,9 +43,23 @@ def create_app(config=None):
             g.pop("_login_user", None)
     _error_handlers(app)
 
+    if app.config.get("DEMO_AUTOSEED") and not app.config.get("TESTING"):
+        _autoseed(app)
+
     if app.config.get("ENABLE_SCHEDULER") and not app.config.get("TESTING"):
         _start_scheduler(app)
     return app
+
+
+def _autoseed(app):
+    """Démo publique : tables + catalogue + données fictives (idempotent, ne duplique jamais)."""
+    from . import seed
+    try:
+        with app.app_context():
+            db.create_all()
+            seed.seed_demo()
+    except Exception:  # ne jamais empêcher le démarrage ; l'erreur est journalisée
+        logging.getLogger(__name__).exception("DEMO_AUTOSEED a échoué")
 
 
 def _security_headers(app):
