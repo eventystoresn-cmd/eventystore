@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% block title %}{{ p.title }} — EventyStore{% endblock %}
+{% block content %}<div class="container prose" style="padding:2rem 0 3rem"><h1>{{ p.title }}</h1>{{ p.body|md }}<p class="muted small">Mis à jour le {{ p.updated_at|date }}</p></div>{% endblock %}

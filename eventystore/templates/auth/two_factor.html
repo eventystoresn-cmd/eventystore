@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, field %}{% block title %}Double authentification — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap"><div class="card"><h1>Double authentification</h1>
+{% if setup %}<p>Activez la double authentification (obligatoire pour l'équipe). Ajoutez ce compte dans une application d'authentification (Google Authenticator, Authy…) avec cette clé :</p>
+<p><code style="font-size:1.1rem;word-break:break-all">{{ secret }}</code></p><p class="small muted">URI : <code style="word-break:break-all">{{ uri }}</code></p>{% else %}<p>Saisissez le code à 6 chiffres de votre application.</p>{% endif %}
+<form method="post">{{ csrf() }}<input type="hidden" name="next" value="{{ next }}">{{ field('code','Code à 6 chiffres',None,'text',True,attrs='inputmode="numeric" maxlength="6" autocomplete="one-time-code"'|safe) }}<button class="btn btn-block">Valider</button></form></div></div>{% endblock %}

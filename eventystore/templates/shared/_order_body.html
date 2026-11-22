@@ -1,0 +1,6 @@
+{% from '_macros.html' import badge %}
+<div class="table-wrap"><table><thead><tr><th>Désignation</th><th class="num">Qté</th><th class="num">PU</th><th class="num">Total</th></tr></thead><tbody>
+{% for i in o.items %}<tr><td>{{ i.title }}</td><td class="num">{{ i.quantity|round(2) }} {{ i.unit }}</td><td class="num">{{ i.unit_price_xof|xof }}</td><td class="num">{{ i.total_xof|xof }}</td></tr>{% endfor %}
+{% if o.discount_xof %}<tr><td colspan="3" class="num">Remise {{ o.promo_code or '' }}</td><td class="num">-{{ o.discount_xof|xof }}</td></tr>{% endif %}
+<tr><th colspan="3" class="num">Total</th><th class="num">{{ o.total_xof|xof }}</th></tr></tbody></table></div>
+<dl class="kv" style="margin-top:.8rem"><dt>Acompte</dt><dd>{{ o.deposit_xof|xof }}</dd><dt>Payé</dt><dd>{{ o.paid_xof|xof }}</dd>{% if o.refunded_xof %}<dt>Remboursé</dt><dd>{{ o.refunded_xof|xof }}</dd>{% endif %}<dt>Reste dû</dt><dd><strong>{{ o.remaining_xof|xof if o.status != 'cancelled' else '—' }}</strong></dd>{% if o.balance_due_date %}<dt>Solde avant le</dt><dd>{{ o.balance_due_date|date }}</dd>{% endif %}{% if o.caution_xof %}<dt>Caution</dt><dd>{{ o.caution_xof|xof }} (à régler / restituée selon le prestataire)</dd>{% endif %}</dl>

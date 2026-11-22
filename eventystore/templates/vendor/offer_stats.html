@@ -1,0 +1,2 @@
+{% extends 'app.html' %}{% set section='offers' %}{% block title %}Statistiques — EventyStore{% endblock %}
+{% block app %}<div class="page-title"><h1>{{ o.title }}</h1></div><div class="kpis"><div class="kpi"><div class="v">{{ o.views }}</div><div class="l">Vues</div></div><div class="kpi"><div class="v">{{ o.clicks }}</div><div class="l">Clics</div></div><div class="kpi"><div class="v">{{ reqs }}</div><div class="l">Demandes de devis</div></div><div class="kpi"><div class="v">{{ booked }}</div><div class="l">Réservations</div></div></div>{% endblock %}

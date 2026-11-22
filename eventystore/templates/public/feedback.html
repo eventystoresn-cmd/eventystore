@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, textarea, field %}{% block title %}Donner mon avis — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap"><div class="card"><h1>Donner mon avis</h1>
+<p class="muted">Vous testez EventyStore ? Dites-nous ce qui fonctionne, ce qui bloque et ce que vous aimeriez voir. Chaque retour est lu.</p>
+<form method="post">{{ csrf() }}<input type="hidden" name="from" value="{{ origin }}"><div class="honeypot" aria-hidden="true"><input name="website" tabindex="-1" autocomplete="off"></div>
+{% if origin %}<p class="small muted">Page concernée : <code>{{ origin }}</code></p>{% endif %}
+<div class="field"><label for="fc">Type de retour</label><select id="fc" name="category">{% for k,l in [('bug','Un problème / une erreur'),('idea','Une idée / une demande'),('design','Le visuel / la lisibilité'),('other','Autre')] %}<option value="{{k}}" {{ 'selected' if form.get('category')==k }}>{{l}}</option>{% endfor %}</select></div>
+<div class="field"><label for="fr">Note globale (facultatif)</label><select id="fr" name="rating"><option value="">—</option>{% for n in [5,4,3,2,1] %}<option value="{{n}}" {{ 'selected' if form.get('rating')|string==n|string }}>{{ n }} ★</option>{% endfor %}</select></div>
+{{ textarea('message','Votre retour',form,True,rows=6) }}
+{{ field('contact','Votre e-mail (facultatif, pour vous répondre)',form,'email') }}
+<button class="btn btn-accent btn-block">Envoyer mon retour</button></form></div></div>{% endblock %}

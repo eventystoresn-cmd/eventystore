@@ -1,0 +1,10 @@
+.venv/
+instance/
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+instance-public/
+.DS_Store
+# Documents internes (non publiés)
+*.docx

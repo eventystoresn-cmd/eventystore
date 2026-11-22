@@ -1,0 +1,3 @@
+{% extends 'base.html' %}{% block title %}Boîte d'envoi (dev) — EventyStore{% endblock %}
+{% block content %}<div class="container" style="padding:2rem 0"><h1>Boîte d'envoi — développement</h1><p class="muted">Aucun SMTP n'est configuré : les e-mails ne sont pas envoyés, ils sont consultables ici (désactivé en production).</p>
+{% for m in rows %}<div class="card" style="margin-bottom:.6rem"><strong>{{ m.subject }}</strong> <span class="badge">{{ m.status }}</span><div class="small muted">À : {{ m.to_email }} · {{ m.created_at|dt }}</div><pre style="white-space:pre-wrap;font:inherit">{{ m.body|urlize }}</pre></div>{% endfor %}</div>{% endblock %}

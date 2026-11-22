@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, icon %}{% block title %}Paiement {{ o.reference }} — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap wide"><h1>Paiement</h1>
+{% if sandbox %}<p class="sandbox-bar">Mode TEST : le paiement est simulé, aucun argent réel ne circule. Les fournisseurs réels (Wave, Orange Money) sont préparés mais non activés.</p>{% endif %}
+{% if holds %}<div class="flash flash-warning">{{ icon('clock') }} Créneau bloqué {{ hold_minutes }} minutes jusqu'à {{ o.hold_expires_at|dt }}.</div>{% endif %}
+<div class="card"><h3>Réservation {{ o.reference }} — {{ o.vendor.business_name }}</h3>{% include 'shared/_order_body.html' %}<p class="small"><strong>Annulation :</strong> {{ CANCELLATION_POLICIES[o.policy][1] }}</p></div>
+<form method="post" class="card" style="margin-top:1rem">{{ csrf() }}<h3>Montant à régler</h3>
+{% if deposit_due > 0 %}<label class="check"><input type="radio" name="choice" value="deposit" checked> Acompte : <strong>{{ deposit_due|xof }}</strong></label><label class="check"><input type="radio" name="choice" value="full"> Totalité : <strong>{{ o.remaining_xof|xof }}</strong></label>{% else %}<label class="check"><input type="radio" name="choice" value="full" checked> Solde : <strong>{{ o.remaining_xof|xof }}</strong></label>{% endif %}
+<h3 style="margin-top:1rem">Moyen de paiement</h3>{% for k,l in methods %}<label class="check"><input type="radio" name="method" value="{{ k }}" {{ 'checked' if loop.first }}> {{ l }}</label>{% endfor %}
+<p class="hint">Le paiement n'est confirmé qu'après validation côté serveur. Ne communiquez jamais vos codes secrets.</p><button class="btn btn-accent">Payer</button> <a class="btn btn-ghost" href="{{ url_for('buyer.order_detail', order_id=o.id) }}">Plus tard</a></form></div>{% endblock %}

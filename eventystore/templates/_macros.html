@@ -1,0 +1,102 @@
+{% macro icon(name, cls='') -%}
+<svg class="icon {{ cls }}" viewBox="0 0 24 24" aria-hidden="true">{{ ICONS_RAW[name]|safe if ICONS_RAW.get(name) else '' }}</svg>
+{%- endmacro %}
+
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro badge(kind, status) -%}
+{%- set m = BADGE_MAPS[kind] -%}{%- set v = m.get(status, (status, 'neutral')) -%}
+<span class="badge badge-{{ v[1] }}">{{ v[0] }}</span>
+{%- endmacro %}
+
+{% macro stars(value, count=None) -%}
+{%- if value -%}<span class="stars" role="img" aria-label="Note {{ value }} sur 5">{% for i in range(1,6) %}<svg class="icon {{ '' if i <= (value|round|int) else 'off' }}" viewBox="0 0 24 24"><path d="m12 3 2.700 5.600 6.100.9-4.400 4.300 1 6.100L12 17l-5.400 2.900 1-6.100L3.200 9.500l6.100-.9z"/></svg>{% endfor %}</span> <strong>{{ value }}</strong>{% if count is not none %} <span class="muted small">({{ count }} avis)</span>{% endif %}
+{%- else -%}<span class="muted small">Pas encore d'avis</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro avail(av) -%}
+{%- if av -%}<span class="avail avail-{{ av.status }}">{{ {'available':'✔','unavailable':'✖','to_confirm':'⚠'}[av.status] }} {{ av.label }}</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro field(name, label, form, type='text', required=False, hint=None, placeholder='', attrs='', autocomplete=None) %}
+<div class="field">
+  <label for="f-{{ name }}" class="{{ 'req' if required }}">{{ label }}</label>
+  <input id="f-{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ (form.get(name) if (form and type != 'password' and form.get(name) is not none) else '') }}" {{ 'required' if required }} placeholder="{{ placeholder }}" {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %} {{ attrs|safe }}>
+  {% if hint %}<div class="hint">{{ hint }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro textarea(name, label, form, required=False, hint=None, rows=4) %}
+<div class="field">
+  <label for="f-{{ name }}" class="{{ 'req' if required }}">{{ label }}</label>
+  <textarea id="f-{{ name }}" name="{{ name }}" rows="{{ rows }}" {{ 'required' if required }}>{{ (form.get(name) if (form and form.get(name) is not none) else '') }}</textarea>
+  {% if hint %}<div class="hint">{{ hint }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro select(name, label, options, current, required=False, blank=None) %}
+<div class="field">
+  <label for="f-{{ name }}" class="{{ 'req' if required }}">{{ label }}</label>
+  <select id="f-{{ name }}" name="{{ name }}" {{ 'required' if required }}>
+    {% if blank is not none %}<option value="">{{ blank }}</option>{% endif %}
+    {% for k, v in options %}<option value="{{ k }}" {{ 'selected' if (current|string) == (k|string) }}>{{ v }}</option>{% endfor %}
+  </select>
+</div>
+{% endmacro %}
+
+{% macro pagination(page, endpoint, view_args={}) %}
+{% if page.pages > 1 %}
+<nav class="pagination" aria-label="Pagination">
+  {% set args = request.args.to_dict() %}{% set _v = args.update(view_args) %}
+  {% for p in range(1, page.pages + 1) %}
+    {% if p == page.page %}<span class="cur" aria-current="page">{{ p }}</span>
+    {% elif p <= 2 or p > page.pages - 2 or (p - page.page)|abs <= 1 %}{% set _ = args.update({'page': p}) %}<a href="{{ url_for(endpoint, **args) }}">{{ p }}</a>
+    {% elif (p - page.page)|abs == 2 %}<span>…</span>{% endif %}
+  {% endfor %}
+</nav>
+{% endif %}
+{% endmacro %}
+
+{% macro empty(msg, icon_name='search', cta_url=None, cta_label=None) %}
+<div class="empty">{{ icon(icon_name) }}<p>{{ msg }}</p>{% if cta_url %}<a class="btn btn-outline" href="{{ cta_url }}">{{ cta_label }}</a>{% endif %}</div>
+{% endmacro %}
+
+{% macro offer_card(o, favs=None, show_compare=True) %}
+{% set cover = o.cover %}
+<article class="offer-card">
+  <div class="photo">
+    {% if cover %}<img src="{{ url_for('media.public_file', rel=cover.thumb or cover.path) }}" alt="{{ cover.alt or o.title }}" loading="lazy" width="400" height="300">
+    {% else %}<img src="{{ url_for('media.placeholder', icon=o.category.root.icon) }}" alt="Illustration de la catégorie {{ o.category.root.name }} (pas de photo fournie)" loading="lazy" width="400" height="300">{% endif %}
+  </div>
+  {% if current_user.is_authenticated and favs is not none %}
+  <form method="post" action="{{ url_for('public.toggle_favorite', offer_id=o.id) }}">{{ csrf() }}
+    <button class="fav-btn {{ 'on' if o.id in favs }}" aria-label="{{ 'Retirer des favoris' if o.id in favs else 'Ajouter aux favoris' }}" title="Favori">{{ icon('heart') }}</button>
+  </form>
+  {% endif %}
+  <div class="body">
+    <div class="row" style="gap:.3rem">
+      {% if o.vendor.verified_badge %}<span class="badge badge-verified">{{ icon('shield') }} Vérifié</span>{% endif %}
+      {% if o.sponsored %}<span class="badge badge-sponsored">Sponsorisé</span>{% elif o.featured %}<span class="badge">Mis en avant</span>{% endif %}
+    </div>
+    <h3><a href="{{ url_for('public.offer', offer_id=o.id, slug=o.slug) }}">{{ o.title }}</a></h3>
+    <div class="vendor">{{ o.vendor.business_name }} · {{ icon('pin') }} {{ o.city or o.region }}</div>
+    <div>{% set r = o.rating %}{{ stars(r[0], r[1]) }}</div>
+    <div class="price">{{ o|price }}</div>
+    <div class="small muted">{{ icon('calendar') }} {{ 'Sur devis · disponibilité à confirmer' if o.price_model == 'quote' else 'Choisissez une date sur la fiche' }}</div>
+    {% if show_compare %}
+    <div class="actions">
+      <form method="post" action="{{ url_for('public.compare_toggle', offer_id=o.id) }}">{{ csrf() }}<button class="btn btn-ghost btn-sm" type="submit" data-multi>{{ 'Retirer du comparateur' if o.id in session.get('compare', []) else 'Comparer' }}</button></form>
+    </div>
+    {% endif %}
+  </div>
+</article>
+{% endmacro %}
+
+{% macro status_tabs(items, current, endpoint, key='statut') %}
+<div class="tabs">
+  <a href="{{ url_for(endpoint) }}" class="{{ 'active' if not current }}">Tous</a>
+  {% for k, label in items %}<a href="{{ url_for(endpoint, **{key: k}) }}" class="{{ 'active' if current == k }}">{{ label }}</a>{% endfor %}
+</div>
+{% endmacro %}
+
+{% macro kv(label, value) %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% endmacro %}

@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block title %}Résultat du paiement — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap center"><div class="card">{% if p.status == 'succeeded' %}<h1>Paiement reçu ✔</h1><p>{{ p.amount_xof|xof }} enregistrés pour la commande {{ o.reference }}.{% if o.status == 'pending_confirmation' %} Le prestataire va confirmer votre réservation.{% elif o.status == 'confirmed' %} Votre réservation est confirmée.{% endif %}</p>
+{% elif p.status == 'failed' %}<h1>Paiement échoué</h1><p>Le paiement n'a pas abouti. Vous pouvez réessayer.</p>{% else %}<h1>Paiement en cours de vérification</h1><p>Nous attendons la confirmation du fournisseur. Actualisez la page dans un instant.</p>{% endif %}
+<a class="btn" href="{{ url_for('buyer.order_detail', order_id=o.id) }}">Voir ma réservation</a></div></div>{% endblock %}

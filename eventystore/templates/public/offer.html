@@ -1,0 +1,59 @@
+{% extends 'base.html' %}{% from '_macros.html' import icon, stars, avail, csrf, offer_card %}
+{% block title %}{{ o.title }}{{ '' if o.vendor.business_name in o.title else ' — ' ~ o.vendor.business_name }} — EventyStore{% endblock %}
+{% block description %}{{ (o.description or '')[:150] }}{% endblock %}
+{% block body_class %}has-cta{% endblock %}
+{% block head %}{% if o.status == 'active' %}{% set ld = {'@context':'https://schema.org','@type':'Service','name':o.title,'description':(o.description or '')[:300],'areaServed':(o.service_areas or [o.region]),'provider':{'@type':'LocalBusiness','name':o.vendor.business_name,'address':{'@type':'PostalAddress','addressLocality':o.city,'addressCountry':'SN'}}} %}{% if o.price_xof and o.price_model != 'quote' %}{% set _ = ld.update({'offers':{'@type':'Offer','price':o.price_xof,'priceCurrency':'XOF','availability':'https://schema.org/InStock'}}) %}{% endif %}{% if o.rating[0] %}{% set _ = ld.update({'aggregateRating':{'@type':'AggregateRating','ratingValue':o.rating[0],'reviewCount':o.rating[1]}}) %}{% endif %}<script type="application/ld+json">{{ ld|tojson }}</script>{% endif %}{% endblock %}
+{% block content %}
+<div class="container">
+{% if preview %}<div class="flash flash-warning" style="margin-top:1rem">Aperçu : cette offre n'est pas publique (statut « {{ o.status_label }} »).</div>{% endif %}
+<nav class="small muted" style="padding-top:1rem" aria-label="Fil d'Ariane"><a href="{{ url_for('public.categories') }}">Catégories</a> › <a href="{{ url_for('public.category', slug=o.category.root.slug) }}">{{ o.category.root.name }}</a>{% if o.category.parent %} › <a href="{{ url_for('public.category', slug=o.category.slug) }}">{{ o.category.name }}</a>{% endif %}</nav>
+<div class="offer-layout"><div class="stack">
+  <div class="gallery"><div class="main">{% if o.media %}<img src="{{ url_for('media.public_file', rel=o.cover.path) }}" alt="{{ o.cover.alt or o.title }}">{% else %}<img src="{{ url_for('media.placeholder', icon=o.category.root.icon) }}" alt="Illustration de la catégorie (le prestataire n'a pas encore ajouté de photo)">{% endif %}</div>
+  {% if o.media|length > 1 %}<div class="thumbs">{% for m in o.media %}<button type="button" class="{{ 'on' if loop.first }}" data-src="{{ url_for('media.public_file', rel=m.path) }}" data-alt="{{ m.alt or o.title }}"><img src="{{ url_for('media.public_file', rel=m.thumb or m.path) }}" alt="Miniature {{ loop.index }}"></button>{% endfor %}</div>{% endif %}</div>
+  <div><div class="row">{% if o.vendor.verified_badge %}<span class="badge badge-verified">{{ icon('shield') }} Vérifié EventyStore</span>{% endif %}<span class="badge">{{ OFFER_TYPES[o.offer_type] }}</span>{% if o.sponsored %}<span class="badge badge-sponsored">Sponsorisé</span>{% endif %}</div>
+  <h1 style="margin-top:.5rem">{{ o.title }}</h1>
+  <p>{% set r = o.rating %}{{ stars(r[0], r[1]) }} · {{ icon('pin') }} {{ o.city or o.region }} · <a href="{{ url_for('public.vendor', slug=o.vendor.slug) }}">{{ o.vendor.business_name }}</a></p></div>
+  <div class="card prose"><h2>Description</h2>{{ o.description|nl2p }}{% if o.inclusions %}<h3>Ce qui est inclus</h3>{{ o.inclusions|nl2p }}{% endif %}
+    {% if o.attrs %}<h3>Caractéristiques</h3><dl class="kv">{% for k,v in o.attrs.items() %}<dt>{{ k|replace('_',' ')|capitalize }}</dt><dd>{{ v }}</dd>{% endfor %}</dl>{% endif %}</div>
+  <div class="card"><h2>Tarifs et conditions</h2><dl class="kv">
+    <dt>Prix</dt><dd><span class="price">{{ o|price }}</span>{% if o.price_model == 'range' %} <span class="muted small">(indicatif)</span>{% endif %}</dd>
+    {% if o.min_quantity and o.min_quantity > 1 %}<dt>Minimum</dt><dd>{{ o.min_quantity }}</dd>{% endif %}
+    {% if o.capacity %}<dt>Capacité max.</dt><dd>{{ o.capacity }}</dd>{% endif %}{% if o.stock_qty %}<dt>Stock total</dt><dd>{{ o.stock_qty }}</dd>{% endif %}
+    {% if o.tiers %}<dt>Tarifs dégressifs</dt><dd>{% for t in o.tiers %}dès {{ t.min_qty }} : {{ t.unit_price|xof }}<br>{% endfor %}</dd>{% endif %}
+    <dt>Acompte</dt><dd>{{ o.deposit_percent }} %</dd>{% if o.caution_xof %}<dt>Caution</dt><dd>{{ o.caution_xof|xof }} (restituée sous conditions)</dd>{% endif %}
+    {% if o.delivery_fee_xof %}<dt>Livraison</dt><dd>{{ o.delivery_fee_xof|xof }}</dd>{% endif %}{% if o.travel_fee_xof %}<dt>Déplacement</dt><dd>{{ o.travel_fee_xof|xof }} hors région {{ o.region }}</dd>{% endif %}
+    <dt>Délai minimum</dt><dd>{{ o.min_notice_days }} jour(s)</dd>
+    <dt>Zones</dt><dd>{{ (o.service_areas or [o.region])|join(', ') }}</dd>
+    <dt>Annulation</dt><dd><strong>{{ CANCELLATION_POLICIES[o.cancellation_policy][0] }}</strong> — {{ CANCELLATION_POLICIES[o.cancellation_policy][1] }}</dd></dl>
+    {% if o.options %}<h3>Options</h3><ul>{% for x in o.options %}<li>{{ x.name }} — {{ x.price_xof|xof }}{{ {'flat':'','per_unit':' / unité','per_person':' / personne'}[x.price_type] }}{{ ' (obligatoire)' if x.required }}</li>{% endfor %}</ul>{% endif %}
+    {% if o.conditions %}<h3>Conditions du prestataire</h3>{{ o.conditions|nl2p }}{% endif %}</div>
+  <div class="card"><h2>Disponibilités</h2><div class="cal" data-offer-calendar="{{ o.id }}"><div class="cal-head"><button class="icon-btn cal-prev" type="button" aria-label="Mois précédent">{{ icon('chevron-left') }}</button><span class="cal-title"></span><button class="icon-btn cal-next" type="button" aria-label="Mois suivant">{{ icon('chevron-right') }}</button></div><div class="cal-grid"></div>
+  <div class="legend"><span class="l-free">Disponible</span><span class="l-partial">Partiellement réservé</span><span class="l-busy">Complet / indisponible</span></div></div>
+  <p class="hint">Les disponibilités reflètent le calendrier tenu par le prestataire. {{ 'Cette offre est sur devis : la disponibilité est à confirmer par le prestataire.' if o.price_model == 'quote' }}</p></div>
+  <div class="card"><h2>Avis ({{ o.rating[1] }})</h2>{% for rv in reviews %}<div style="margin-bottom:1rem">{{ stars(rv.rating) }} <strong>{{ rv.buyer.first_name }}</strong> <span class="muted small">{{ rv.created_at|date }} · avis vérifié</span><p>{{ rv.comment }}</p>{% if rv.vendor_reply %}<blockquote class="small"><strong>Réponse du prestataire :</strong> {{ rv.vendor_reply }}</blockquote>{% endif %}</div>{% else %}<p class="muted">Aucun avis pour le moment. Seuls les clients ayant terminé une commande peuvent en déposer.</p>{% endfor %}</div>
+</div>
+<aside class="booking" id="reserver" aria-label="Réservation">
+  <div class="price" style="font-size:1.3rem">{{ o|price }}</div><p class="muted small">Prix en FCFA · {{ o.vendor.business_name }}</p>
+  {% if not current_user.is_authenticated %}<p>Connectez-vous pour réserver ou demander un devis.</p><a class="btn btn-accent btn-block" href="{{ url_for('auth.login', next=request.path) }}">Se connecter</a><p class="center small"><a href="{{ url_for('auth.register') }}">Créer un compte</a></p>
+  {% elif not current_user.is_buyer %}<p class="muted">Connecté en tant que {{ 'prestataire' if current_user.is_vendor else 'équipe' }} : la réservation est réservée aux comptes organisateurs.</p>
+  {% else %}
+  <form method="post" action="{{ url_for('buyer.cart_add') }}" data-estimator="{{ o.id }}" class="stack">{{ csrf() }}<input type="hidden" name="offer_id" value="{{ o.id }}">
+    <div class="field" style="margin:0"><label for="ev">Événement</label>
+      {% if events %}<select id="ev" name="event_id" data-event-select required>{% for e in events %}<option value="{{ e.id }}" data-start="{{ e.start_date.isoformat() }}" data-end="{{ e.end_date.isoformat() }}" data-guests="{{ e.guests or '' }}" data-location="{{ e.address or e.city or '' }}">{{ e.title }} — {{ e.start_date|shortdate }}</option>{% endfor %}</select>
+      {% else %}<a class="btn btn-outline btn-block btn-sm" href="{{ url_for('buyer.event_new', next=request.path) }}">{{ icon('plus') }} Créer mon événement</a>{% endif %}</div>
+    <div class="form-grid c2"><div class="field" style="margin:0"><label for="s">Début</label><input id="s" type="date" name="start" value="{{ start or (events[0].start_date if events) or '' }}" min="{{ today().isoformat() }}" required></div><div class="field" style="margin:0"><label for="e">Fin</label><input id="e" type="date" name="end" value="{{ end or (events[0].end_date if events) or '' }}"></div></div>
+    <div class="field" style="margin:0"><label for="q">{{ quantity_meaning(o) }}</label><input id="q" type="number" name="quantity" min="{{ o.min_quantity or 1 }}" value="{{ o.min_quantity or 1 }}" data-fill-guests="1"></div>
+    {% for x in o.options %}<label class="check"><input type="checkbox" name="options" value="{{ x.id }}" {{ 'checked disabled' if x.required }}> {{ x.name }} (+{{ x.price_xof|xof }})</label>{% if x.required %}<input type="hidden" name="options" value="{{ x.id }}">{% endif %}{% endfor %}
+    <div class="field" style="margin:0"><label for="pr">Code promo</label><input id="pr" name="promo" placeholder="Facultatif"></div>
+    <div class="est" id="estimate" aria-live="polite"></div>
+    {% if o.is_bookable_direct %}<button class="btn btn-accent btn-block" type="submit" data-submit-book>Ajouter au panier</button>{% endif %}
+  </form>
+  <div class="stack" style="margin-top:.8rem"><a class="btn btn-outline btn-block" href="{{ url_for('buyer.quote_new', offer_id=o.id, start=start, end=end) }}">Demander un devis</a>
+  <div class="row"><form method="post" action="{{ url_for('public.toggle_favorite', offer_id=o.id) }}">{{ csrf() }}<button class="btn btn-ghost btn-sm">{{ icon('heart') }} {{ 'Retirer des favoris' if is_fav else 'Favori' }}</button></form>
+  <form method="post" action="{{ url_for('public.compare_toggle', offer_id=o.id) }}">{{ csrf() }}<button class="btn btn-ghost btn-sm">{{ icon('scale') }} {{ 'Retirer du comparateur' if o.id in compare_ids else 'Comparer' }}</button></form></div></div>
+  {% endif %}
+  {% if av %}<p>{{ avail(av) }}</p>{% endif %}
+</aside></div>
+<div class="mobile-cta"><div><div class="price">{{ o|price }}</div><span class="muted small">{{ o.vendor.business_name }}</span></div><a class="btn btn-accent" href="#reserver">Réserver / devis</a></div>
+{% if similar %}<h2>Offres similaires</h2><div class="grid g4" style="margin-bottom:2rem">{% for s in similar %}{{ offer_card(s, none, False) }}{% endfor %}</div>{% endif %}
+</div>{% endblock %}

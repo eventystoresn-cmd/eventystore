@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Confirmez votre e-mail — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap center"><div class="card"><h1>Vérifiez votre boîte mail</h1>
+<p>Nous avons envoyé un lien de confirmation à <strong>{{ current_user.email }}</strong>.</p>
+<form method="post" action="{{ url_for('auth.resend_verification') }}">{{ csrf() }}<button class="btn btn-outline">Renvoyer l'e-mail</button></form>
+{% if env != 'production' %}<p class="small muted" style="margin-top:1rem">Mode développement : aucun SMTP configuré, <a href="{{ url_for('public.dev_outbox') }}">consultez la boîte d'envoi</a> pour obtenir le lien.</p>{% endif %}
+<p><a href="{{ url_for('auth.after_login') }}">Continuer sans confirmer</a> (fonctions limitées)</p></div></div>{% endblock %}

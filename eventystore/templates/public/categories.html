@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% from '_macros.html' import icon %}{% block title %}Catégories — EventyStore{% endblock %}
+{% block content %}<div class="container" style="padding:2rem 0"><h1>Toutes les catégories</h1><div class="grid g3">
+{% for c in categories %}<div class="card"><h3><a href="{{ url_for('public.category', slug=c.slug) }}">{{ icon(c.icon) }} {{ c.name }}</a></h3><p class="muted small">{{ c.description }}</p>
+<div class="chips">{% for s in c.children if s.active %}<a class="badge" href="{{ url_for('public.category', slug=s.slug) }}">{{ s.name }}</a>{% endfor %}</div></div>{% endfor %}</div></div>{% endblock %}

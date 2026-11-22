@@ -1,0 +1,16 @@
+{% extends 'app.html' %}{% from '_macros.html' import icon, badge %}{% set section='dash' %}{% block title %}Mon espace — EventyStore{% endblock %}
+{% block app %}<div class="page-title"><h1>Bonjour {{ current_user.first_name }} 👋</h1><a class="btn btn-accent" href="{{ url_for('buyer.event_new') }}">{{ icon('plus') }} Nouvel événement</a></div>
+<div class="kpis"><div class="kpi"><div class="v">{{ events|length }}</div><div class="l">Événements à venir</div></div>
+<div class="kpi"><div class="v">{{ by_status.get('confirmed',0) + by_status.get('in_progress',0) }}</div><div class="l">Réservations confirmées</div></div>
+<div class="kpi"><div class="v">{{ spent|xof }}</div><div class="l">Montant payé</div></div>
+<div class="kpi {{ 'alert' if remaining }}"><div class="v">{{ remaining|xof }}</div><div class="l">Reste à payer</div></div></div>
+<div class="grid g2" style="margin-top:1rem">
+<div class="card"><div class="card-title"><h3>À traiter</h3></div>
+{% for r in to_handle %}<p>{{ icon('file') }} <a href="{{ url_for('buyer.quote_detail', req_id=r.id) }}">Devis de {{ r.vendor.business_name }}</a> — {{ r.latest_quote.total_xof|xof }}</p>{% endfor %}
+{% if waiting %}<p class="muted">{{ waiting }} demande(s) en attente de réponse du prestataire.</p>{% endif %}
+{% for o in upcoming_pay %}<p>{{ icon('clock') }} Solde {{ o.remaining_xof|xof }} avant le {{ o.balance_due_date|date }} — <a href="{{ url_for('buyer.order_detail', order_id=o.id) }}">{{ o.reference }}</a></p>{% endfor %}
+{% if not to_handle and not waiting and not upcoming_pay %}<p class="muted">Rien à traiter pour le moment.</p>{% endif %}</div>
+<div class="card"><div class="card-title"><h3>Prochains événements</h3><a href="{{ url_for('buyer.events') }}" class="small">Tous</a></div>
+{% for e in events %}<p><a href="{{ url_for('buyer.event_detail', event_id=e.id) }}"><strong>{{ e.title }}</strong></a><br><span class="muted small">{{ e.start_date|date }} · {{ e.city }}</span></p>{% else %}<p class="muted">Aucun événement. <a href="{{ url_for('buyer.event_new') }}">Créez le premier</a> : ses informations seront réutilisées dans vos demandes.</p>{% endfor %}</div></div>
+{% if budget_total %}<div class="card" style="margin-top:1rem"><h3>Budgets</h3><p>Budget total des événements : <strong>{{ budget_total|xof }}</strong></p></div>{% endif %}
+{% endblock %}

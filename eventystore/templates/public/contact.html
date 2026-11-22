@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, field, textarea %}{% block title %}Contact — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap"><div class="card"><h1>Nous contacter</h1><p class="muted">{{ setting('support_hours') }}</p>
+<form method="post">{{ csrf() }}<div class="honeypot" aria-hidden="true"><input name="website" tabindex="-1" autocomplete="off"></div>
+{{ field('name','Nom',form,required=True) }}{{ field('email','E-mail',form,'email',True) }}{{ field('subject','Objet',form) }}{{ textarea('body','Message',form,True) }}<button class="btn btn-block">Envoyer</button></form></div></div>{% endblock %}

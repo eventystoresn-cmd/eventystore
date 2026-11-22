@@ -1,0 +1,16 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, field, select %}{% block title %}Inscription — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap wide"><div class="card"><h1>Créer mon compte organisateur</h1>
+<p class="muted">Organisez vos événements, comparez les prestataires et réservez en toute confiance. Vous êtes un professionnel ? <a href="{{ url_for('auth.register_vendor') }}">Devenir prestataire</a>.</p>
+<form method="post" novalidate>{{ csrf() }}
+<div class="form-grid c2">
+<div class="field"><label for="f-account_type">Type de compte</label><select id="f-account_type" name="account_type"><option value="individual" {{ 'selected' if form.get('account_type')!='company' }}>Particulier</option><option value="company" {{ 'selected' if form.get('account_type')=='company' }}>Entreprise / association</option></select></div>
+<div data-company>{{ field('company_name','Nom de l\'entreprise',form) }}</div>
+{{ field('first_name','Prénom',form,required=True,autocomplete='given-name') }}{{ field('last_name','Nom',form,required=True,autocomplete='family-name') }}
+{{ field('email','Adresse e-mail',form,'email',True,autocomplete='email') }}{{ field('phone','Téléphone',form,'tel',True,placeholder='77 123 45 67',hint='Mobile Money et notifications SMS.',autocomplete='tel') }}
+{{ field('city','Ville',form,placeholder='Dakar') }}{{ field('neighborhood','Quartier',form) }}
+{{ field('password','Mot de passe',None,'password',True,hint='8 caractères minimum, avec lettres et chiffres.',autocomplete='new-password') }}{{ field('password2','Confirmer le mot de passe',None,'password',True,autocomplete='new-password') }}
+</div>
+<label class="check"><input type="checkbox" name="accept_terms" value="1" required> <span>J'accepte les <a href="{{ url_for('public.page',slug='conditions-generales') }}" target="_blank">conditions d'utilisation</a> et la <a href="{{ url_for('public.page',slug='confidentialite') }}" target="_blank">politique de confidentialité</a>.</span></label>
+<label class="check"><input type="checkbox" name="marketing_consent" value="1"> <span>J'accepte de recevoir des conseils et offres EventyStore (facultatif).</span></label>
+<p style="margin-top:1rem"><button class="btn btn-block" type="submit">Créer mon compte</button></p></form>
+<p class="small">Déjà inscrit ? <a href="{{ url_for('auth.login') }}">Se connecter</a></p></div></div>{% endblock %}

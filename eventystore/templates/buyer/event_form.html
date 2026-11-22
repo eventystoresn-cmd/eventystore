@@ -1,0 +1,11 @@
+{% extends 'app.html' %}{% from '_macros.html' import csrf, field, textarea %}{% set section='events' %}{% block title %}Événement — EventyStore{% endblock %}
+{% block app %}<div class="page-title"><h1>{{ 'Modifier' if ev else 'Nouvel' }} événement</h1></div>
+<form method="post" class="card" novalidate>{{ csrf() }}{% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+<div class="form-grid c2">{{ field('title','Nom de l\'événement',form,required=True) }}
+<div class="field"><label for="f-event_type">Type</label><select id="f-event_type" name="event_type">{% for k,v in EVENT_TYPES.items() %}<option value="{{k}}" {{ 'selected' if form.get('event_type')==k }}>{{v}}</option>{% endfor %}</select></div>
+{{ field('start_date','Date de début',form,'date',True) }}{{ field('end_date','Date de fin',form,'date') }}{{ field('start_time','Heure de début',form,'time') }}{{ field('end_time','Heure de fin',form,'time') }}
+{{ field('venue','Nom du lieu',form) }}{{ field('address','Adresse',form) }}
+<div class="field"><label for="f-city">Ville</label><input id="f-city" name="city" list="cities" value="{{ form.get('city','') }}"><datalist id="cities">{% for r,ps in REGIONS.items() %}{% for p in ps %}<option value="{{p}}">{% endfor %}{% endfor %}</datalist></div>
+<div class="field"><label for="f-indoor">Intérieur / extérieur</label><select id="f-indoor" name="indoor"><option value="">—</option>{% for k,v in [('indoor','Intérieur'),('outdoor','Extérieur'),('both','Les deux')] %}<option value="{{k}}" {{ 'selected' if form.get('indoor')==k }}>{{v}}</option>{% endfor %}</select></div>
+{{ field('guests','Nombre de participants',form,'number',attrs='min="1"') }}{{ field('budget_xof','Budget global (FCFA)',form,'number',attrs='min="0"') }}{{ field('budget_alert_pct','Alerte budget à (%)',form,'number',hint='Vous serez alerté quand les dépenses engagées dépassent ce seuil.',attrs='min="10" max="200"') }}</div>
+{{ textarea('description','Description',form) }}<button class="btn">Enregistrer</button> <a class="btn btn-ghost" href="{{ url_for('buyer.events') }}">Annuler</a></form>{% endblock %}

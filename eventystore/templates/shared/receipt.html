@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block title %}Reçu {{ p.external_ref }} — EventyStore{% endblock %}
+{% block content %}<div class="container" style="padding:2rem 0;max-width:720px"><div class="row between no-print"><h1>Reçu de paiement</h1><button class="btn" data-print>Imprimer / PDF</button></div>
+<div class="card"><img src="{{ url_for('static', filename='brand/logo.png') }}" alt="EventyStore" width="150"><h2>Reçu n° {{ p.external_ref }}</h2>
+<dl class="kv"><dt>Date</dt><dd>{{ p.paid_at|dt }}</dd><dt>Commande</dt><dd>{{ o.reference }}</dd><dt>Prestataire</dt><dd>{{ o.vendor.business_name }}</dd><dt>Type</dt><dd>{{ p.kind }}</dd><dt>Moyen</dt><dd>{{ PAYMENT_METHODS.get(p.method, p.method) }}</dd><dt>Montant</dt><dd><strong>{{ p.amount_xof|xof }}</strong></dd>{% if p.refunded_xof %}<dt>Remboursé</dt><dd>{{ p.refunded_xof|xof }}</dd>{% endif %}</dl>
+{% if p.provider == 'sandbox' %}<p class="sandbox-bar">Paiement de TEST — aucun argent réel n'a été encaissé. Ce document n'a aucune valeur comptable.</p>{% endif %}
+<p class="muted small">Ce reçu n'est pas une facture. Les règles de facturation et de TVA applicables restent à valider (cahier §24).</p></div></div>{% endblock %}

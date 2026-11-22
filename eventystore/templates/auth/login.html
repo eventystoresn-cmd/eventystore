@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, field %}{% block title %}Connexion — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap"><div class="card"><h1>Connexion</h1>
+<form method="post" novalidate>{{ csrf() }}<input type="hidden" name="next" value="{{ next }}">
+{{ field('identifier','E-mail ou téléphone',{'identifier':identifier or ''},required=True,autocomplete='username') }}
+{{ field('password','Mot de passe',None,'password',True,autocomplete='current-password') }}
+<label class="check"><input type="checkbox" name="remember" value="1"> Rester connecté</label>
+<p style="margin-top:1rem"><button class="btn btn-block" type="submit">Se connecter</button></p></form>
+<p class="small"><a href="{{ url_for('auth.forgot_password') }}">Mot de passe oublié ?</a></p>
+{% if setting('demo_mode') == '1' %}<div class="demo-accounts"><strong>Version de démonstration</strong> — testez avec un compte fictif (mot de passe <code>Demo1234</code>) :<br>
+{% for l,e in [('Organisateur','acheteur@demo.eventystore.sn'),('Prestataire','prestataire1@demo.eventystore.sn'),('Administrateur','admin@demo.eventystore.sn')] %}<button type="button" class="btn btn-outline btn-sm" data-fill="{{ e }}">{{ l }}</button>{% endfor %}</div>{% endif %}
+<hr style="border:0;border-top:1px solid var(--line)"><p class="small">Pas encore de compte ? <a href="{{ url_for('auth.register') }}">Créer un compte organisateur</a> · <a href="{{ url_for('auth.register_vendor') }}">Devenir prestataire</a></p></div></div>{% endblock %}

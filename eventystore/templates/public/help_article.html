@@ -1,0 +1,2 @@
+{% extends 'base.html' %}{% block title %}{{ a.title }} — Aide — EventyStore{% endblock %}
+{% block content %}<div class="container prose" style="padding:2rem 0 3rem"><p><a href="{{ url_for('public.help_center') }}">← Centre d'aide</a></p><h1>{{ a.title }}</h1>{{ a.body|md }}</div>{% endblock %}

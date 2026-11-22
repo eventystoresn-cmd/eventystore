@@ -1,0 +1,13 @@
+{% extends 'app.html' %}{% from '_macros.html' import icon, csrf, avail, empty %}{% set section='cart' %}{% block title %}Panier — EventyStore{% endblock %}
+{% block app %}<div class="page-title"><h1>Mon panier</h1></div>
+{% if not rows %}<div class="card">{{ empty('Votre panier est vide.','cart',url_for('public.search'),'Trouver des prestataires') }}</div>
+{% else %}<form method="post" action="{{ url_for('buyer.cart_checkout') }}">{{ csrf() }}
+{% for v, vrows in by_vendor.items() %}<div class="card" style="margin-bottom:1rem"><div class="card-title"><h3>{{ v.business_name }}</h3><span class="muted small">Réservation distincte (paiement et confirmation propres)</span></div>
+{% for r in vrows %}{% set ci = r.item %}<div class="row between" style="border-top:1px solid var(--line);padding:.7rem 0;align-items:flex-start"><div class="grow"><strong><a href="{{ url_for('public.offer', offer_id=ci.offer.id, slug=ci.offer.slug) }}">{{ ci.offer.title }}</a></strong><br><span class="muted small">{{ ci.start_date|daterange(ci.end_date) }} · {{ ci.event.title if ci.event }} · {{ r.calc.lines[0].detail }}</span><br>{{ avail(r.av) }} {% if r.av.status != 'available' %}<span class="small">{{ r.av.reason }}</span>{% endif %}
+{% for l in r.calc.lines[1:] %}<br><span class="small muted">{{ l.label }} : {{ l.total_xof|xof }}</span>{% endfor %}</div><div class="right"><strong>{{ r.calc.total_xof|xof }}</strong><br><span class="small muted">acompte {{ r.calc.deposit_xof|xof }}</span><br>
+<button class="link-btn small" formaction="{{ url_for('buyer.cart_remove', item_id=ci.id) }}" formmethod="post" data-multi>Retirer</button></div></div>{% endfor %}
+<div class="field" style="margin:.5rem 0 0;max-width:260px"><label for="promo_{{ v.id }}">Code promo {{ v.business_name }}</label><input id="promo_{{ v.id }}" name="promo_{{ v.id }}" placeholder="Facultatif"></div></div>{% endfor %}
+<div class="card"><div class="row between"><strong>Total</strong><strong class="price">{{ total|xof }}</strong></div><div class="row between muted"><span>Acomptes à régler maintenant</span><span>{{ deposit|xof }}</span></div>
+<p class="hint">Le prix final est recalculé par le serveur à la validation, ainsi que la disponibilité. Frais et conditions détaillés avant paiement.</p>
+<label class="check"><input type="checkbox" name="accept_conditions" value="1" required> J'accepte les conditions du prestataire et la <a href="{{ url_for('public.page', slug='annulation') }}" target="_blank">politique d'annulation</a>.</label>
+<p><button class="btn btn-accent" {{ 'disabled' if blocked }}>Valider et payer l'acompte</button>{% if blocked %} <span class="small" style="color:var(--err)">Retirez les lignes indisponibles.</span>{% endif %}</p></div></form>{% endif %}{% endblock %}

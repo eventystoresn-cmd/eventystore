@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block title %}Récapitulatif {{ o.reference }} — EventyStore{% endblock %}
+{% block content %}<div class="container" style="padding:2rem 0;max-width:820px"><div class="row between no-print"><h1>Récapitulatif de réservation</h1><button class="btn" data-print>Imprimer / enregistrer en PDF</button></div>
+<div class="card"><h2>{{ o.reference }}</h2><dl class="kv"><dt>Acheteur</dt><dd>{{ o.buyer.display_name }}</dd><dt>Prestataire</dt><dd>{{ o.vendor.business_name }}</dd><dt>Dates</dt><dd>{{ o.start_date|daterange(o.end_date) }}</dd><dt>Événement</dt><dd>{{ o.event.title if o.event else '—' }}</dd><dt>Statut</dt><dd>{{ o.status_label }}</dd></dl>{% include 'shared/_order_body.html' %}
+{% if viewer == 'vendor' %}<dl class="kv"><dt>Commission ({{ (o.commission_bp/100)|round(2) }} %)</dt><dd>{{ o.commission_xof|xof }}</dd><dt>Net prestataire</dt><dd>{{ o.net_vendor_xof|xof }}</dd></dl>{% endif %}
+<p><strong>Politique d'annulation :</strong> {{ CANCELLATION_POLICIES[o.policy][1] }}</p>{% if o.conditions_snapshot %}<p><strong>Conditions :</strong> {{ o.conditions_snapshot }}</p>{% endif %}</div></div>{% endblock %}

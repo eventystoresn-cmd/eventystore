@@ -1,0 +1,28 @@
+# Déploiement « démo publique » sur Render (offre gratuite). Voir docs/PUBLISH.md
+services:
+  - type: web
+    name: eventystore
+    runtime: python
+    plan: free
+    buildCommand: pip install --only-binary=:all: -r requirements.txt
+    startCommand: gunicorn wsgi:app --workers 1 --threads 4 --timeout 60
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: EVENTY_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEMO_AUTOSEED
+        value: "1"
+      - key: AUTO_VERIFY_EMAIL
+        value: "1"
+      - key: ENFORCE_ADMIN_2FA
+        value: "0"
+      - key: ENABLE_SCHEDULER
+        value: "1"
+      - key: PAYMENT_PROVIDER
+        value: sandbox
+      - key: SITE_URL
+        sync: false

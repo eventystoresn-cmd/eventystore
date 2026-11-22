@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% from '_macros.html' import icon, stars, csrf %}{% block title %}Comparer — EventyStore{% endblock %}
+{% block content %}<div class="container" style="padding:2rem 0"><h1>Comparer des offres</h1>
+{% if offers|length < 2 %}<div class="card"><p>Ajoutez au moins 2 offres de la même famille depuis les résultats (bouton « Comparer »).</p><a class="btn" href="{{ url_for('public.search') }}">Voir les offres</a></div>
+{% else %}<div class="table-wrap"><table><thead><tr><th></th>{% for o in offers %}<th><a href="{{ url_for('public.offer', offer_id=o.id, slug=o.slug) }}">{{ o.title }}</a></th>{% endfor %}</tr></thead><tbody>
+<tr><th>Prestataire</th>{% for o in offers %}<td>{{ o.vendor.business_name }}{% if o.vendor.verified_badge %} <span class="badge badge-verified">Vérifié</span>{% endif %}</td>{% endfor %}</tr>
+<tr><th>Prix et unité</th>{% for o in offers %}<td><span class="price">{{ o|price }}</span>{% if o.price_model != 'fixed' %}<br><span class="muted small">Prix {{ PRICE_MODELS[o.price_model]|lower }} : à confirmer</span>{% endif %}</td>{% endfor %}</tr>
+<tr><th>Zone</th>{% for o in offers %}<td>{{ (o.service_areas or [o.region])|join(', ') }}</td>{% endfor %}</tr>
+<tr><th>Capacité / stock</th>{% for o in offers %}<td>{{ o.capacity or o.stock_qty or '—' }}</td>{% endfor %}</tr>
+<tr><th>Frais (livraison / déplacement)</th>{% for o in offers %}<td>{{ (o.delivery_fee_xof|xof) if o.delivery_fee_xof else '—' }} / {{ (o.travel_fee_xof|xof) if o.travel_fee_xof else '—' }}</td>{% endfor %}</tr>
+<tr><th>Acompte</th>{% for o in offers %}<td>{{ o.deposit_percent }} %</td>{% endfor %}</tr>
+<tr><th>Annulation</th>{% for o in offers %}<td>{{ CANCELLATION_POLICIES[o.cancellation_policy][0] }}</td>{% endfor %}</tr>
+<tr><th>Disponibilité</th>{% for o in offers %}<td>{{ 'À confirmer (sur devis)' if o.price_model == 'quote' else 'Voir le calendrier sur la fiche' }}</td>{% endfor %}</tr>
+<tr><th>Note</th>{% for o in offers %}<td>{% set r = o.rating %}{{ stars(r[0], r[1]) }}</td>{% endfor %}</tr>
+<tr><th>Conditions</th>{% for o in offers %}<td class="small">{{ (o.conditions or '—')[:160] }}</td>{% endfor %}</tr></tbody></table></div>
+<form method="post" action="{{ url_for('public.compare_clear') }}" style="margin-top:1rem">{{ csrf() }}<button class="btn btn-outline">Vider le comparateur</button></form>{% endif %}</div>{% endblock %}

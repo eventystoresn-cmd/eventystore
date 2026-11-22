@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Paiement test — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap"><div class="card"><p class="sandbox-bar">PAIEMENT TEST — simulation interne. Aucun argent réel.</p><h1>Confirmer {{ p.amount_xof|xof }}</h1><p>Commande {{ o.reference }} · référence {{ p.external_ref }}</p>
+<form method="post" class="row">{{ csrf() }}<button class="btn" name="result" value="success">Simuler un paiement réussi</button><button class="btn btn-danger" name="result" value="fail">Simuler un échec</button></form>
+<p class="hint">Le résultat transite par le même pipeline serveur (événement signé) que les webhooks Wave / Orange Money réels.</p></div></div>{% endblock %}

@@ -1,0 +1,3 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, field %}{% block title %}Mot de passe oublié — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap"><div class="card"><h1>Mot de passe oublié</h1><p class="muted">Saisissez votre e-mail : vous recevrez un lien valable 1 heure.</p>
+<form method="post">{{ csrf() }}{{ field('email','Adresse e-mail',None,'email',True) }}<button class="btn btn-block">Envoyer le lien</button></form></div></div>{% endblock %}

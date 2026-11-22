@@ -1,0 +1,17 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, field %}{% block title %}Devenir prestataire — EventyStore{% endblock %}
+{% block content %}<div class="container auth-wrap wide"><div class="card"><h1>Devenir prestataire</h1>
+<p class="muted">Créez votre compte, puis déposez vos justificatifs : l'équipe EventyStore vérifie votre dossier sous 24 à 48 h ouvrées avant la publication de vos offres.</p>
+<form method="post" novalidate>{{ csrf() }}
+<h3>Responsable</h3><div class="form-grid c2">
+{{ field('first_name','Prénom',form,required=True) }}{{ field('last_name','Nom',form,required=True) }}
+{{ field('email','Adresse e-mail',form,'email',True,autocomplete='email') }}{{ field('phone','Téléphone',form,'tel',True,placeholder='77 123 45 67') }}
+{{ field('password','Mot de passe',None,'password',True,hint='8 caractères minimum, lettres et chiffres.',autocomplete='new-password') }}{{ field('password2','Confirmer',None,'password',True,autocomplete='new-password') }}</div>
+<h3>Activité</h3><div class="form-grid c2">
+{{ field('business_name','Nom commercial',form,required=True) }}
+<div class="field"><label for="f-legal_status" class="req">Statut juridique</label><select id="f-legal_status" name="legal_status" required><option value="">Choisir…</option>{% for k,v in [('independant','Indépendant / particulier'),('entreprise','Entreprise'),('association','Association')] %}<option value="{{k}}" {{ 'selected' if form.get('legal_status')==k }}>{{v}}</option>{% endfor %}</select></div>
+{{ field('activity_type','Type d\'activité',form,placeholder='Traiteur, DJ, location de chaises…') }}{{ field('city','Ville principale',form,required=True,placeholder='Dakar') }}</div>
+<div class="field"><label class="req">Catégories proposées</label><div class="chips">{% for c in categories %}<label class="chip"><input type="checkbox" name="categories" value="{{ c.id }}" {{ 'checked' if c.id in selected_cats }}><span>{{ c.name }}</span></label>{% endfor %}</div></div>
+<div class="field"><label class="req">Régions desservies</label><div class="chips">{% for r in regions %}<label class="chip"><input type="checkbox" name="areas" value="{{ r }}" {{ 'checked' if r in selected_areas }}><span>{{ r }}</span></label>{% endfor %}</div></div>
+<label class="check"><input type="checkbox" name="accept_terms" value="1" required> <span>J'accepte les <a href="{{ url_for('public.page',slug='conditions-generales') }}" target="_blank">conditions d'utilisation</a> et la <a href="{{ url_for('public.page',slug='confidentialite') }}" target="_blank">politique de confidentialité</a>.</span></label>
+<label class="check"><input type="checkbox" name="marketing_consent" value="1"> <span>Recevoir les actualités EventyStore (facultatif).</span></label>
+<p style="margin-top:1rem"><button class="btn btn-block" type="submit">Créer mon compte prestataire</button></p></form></div></div>{% endblock %}

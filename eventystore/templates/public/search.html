@@ -1,0 +1,35 @@
+{% extends 'base.html' %}{% from '_macros.html' import icon, offer_card, pagination, empty %}
+{% block title %}{{ category.name ~ ' — ' if category }}Recherche — EventyStore{% endblock %}
+{% block content %}
+<div class="container">
+<div style="padding-top:1.5rem"><h1 style="margin-bottom:.2rem">{{ category.name if category else 'Rechercher une prestation' }}</h1>
+{% if category and category.description %}<p class="muted">{{ category.description }}</p>{% endif %}
+{% if category and category.children %}<div class="chips" style="margin-bottom:.5rem">{% for s in category.children if s.active %}<a class="badge" href="{{ url_for('public.category', slug=s.slug) }}">{{ s.name }}</a>{% endfor %}</div>{% endif %}</div>
+<div class="results-layout">
+<aside><details class="filters-m" open><summary>{{ icon('filter') }} Filtres</summary>
+<form class="filters" method="get" action="{{ url_for('public.category', slug=category.slug) if category else url_for('public.search') }}">
+<h3>Mot-clé</h3><div class="pos-rel"><input name="q" value="{{ params.q }}" placeholder="Ex. buffet, DJ…" data-suggest><div class="suggest"></div></div>
+{% if not category %}<h3>Catégorie</h3><select name="category"><option value="">Toutes</option>{% for c in all_cats %}<optgroup label="{{ c.name }}"><option value="{{ c.slug }}" {{ 'selected' if params.category==c.slug }}>Toute la catégorie</option>{% for s in c.children %}<option value="{{ s.slug }}" {{ 'selected' if params.category==s.slug }}>{{ s.name }}</option>{% endfor %}</optgroup>{% endfor %}</select>{% endif %}
+<h3>Lieu</h3><input name="place" list="pl" value="{{ params.place }}" placeholder="Région, ville ou quartier"><datalist id="pl">{% for r, ps in regions.items() %}<option value="{{ r }}">{% for p in ps %}<option value="{{ p }}">{% endfor %}{% endfor %}</datalist>
+<h3>Date</h3><div class="row"><input type="date" name="start" value="{{ params.start or '' }}" style="flex:1"><input type="date" name="end" value="{{ params.end or '' }}" style="flex:1"></div>
+<h3>Invités / capacité</h3><input type="number" name="guests" min="1" value="{{ params.guests or '' }}" placeholder="Nombre de personnes">
+<h3>Budget (FCFA)</h3><div class="row"><input type="number" name="bmin" min="0" value="{{ params.bmin if params.bmin is not none }}" placeholder="Min" style="flex:1"><input type="number" name="bmax" min="0" value="{{ params.bmax if params.bmax is not none }}" placeholder="Max" style="flex:1"></div>
+<h3>Tarification</h3><select name="pmodel"><option value="">Tous les modèles</option>{% for k,v in PRICE_MODELS.items() %}<option value="{{k}}" {{ 'selected' if params.pmodel==k }}>{{v}}</option>{% endfor %}</select>
+<select name="punit" style="margin-top:.4rem"><option value="">Toutes les unités</option>{% for k,v in PRICE_UNITS.items() %}<option value="{{k}}" {{ 'selected' if params.punit==k }}>{{v}}</option>{% endfor %}</select>
+<h3>Type</h3><select name="otype"><option value="">Tous</option>{% for k,v in OFFER_TYPES.items() %}<option value="{{k}}" {{ 'selected' if params.otype==k }}>{{v}}</option>{% endfor %}</select>
+<h3>Note minimale</h3><select name="rating"><option value="">Toutes</option>{% for n in [4,3,2] %}<option value="{{n}}" {{ 'selected' if params.rating==n }}>{{n}}★ et plus</option>{% endfor %}</select>
+<h3>Options</h3>
+<label class="check"><input type="checkbox" name="verified" value="1" {{ 'checked' if params.verified }}> Prestataires vérifiés (tous les résultats le sont)</label>
+<label class="check"><input type="checkbox" name="delivery" value="1" {{ 'checked' if params.delivery }}> Livraison</label>
+<label class="check"><input type="checkbox" name="travel" value="1" {{ 'checked' if params.travel }}> Déplacement possible</label>
+<label class="check"><input type="checkbox" name="online" value="1" {{ 'checked' if params.online }}> Paiement en ligne</label>
+<p style="margin-top:1rem"><button class="btn btn-block">Appliquer</button></p><p class="center"><a href="{{ url_for('public.category', slug=category.slug) if category else url_for('public.search') }}" class="small">Réinitialiser</a></p>
+</form></details></aside>
+<section>
+<div class="row between" style="margin-bottom:1rem"><strong>{{ total }} résultat{{ 's' if total > 1 }}</strong>
+<form method="get" class="row">{% for k,v in q_args.items() if k != 'sort' %}<input type="hidden" name="{{k}}" value="{{v}}">{% endfor %}<label for="sort" class="small" style="margin:0">Trier par</label><select id="sort" name="sort" style="width:auto" data-autosubmit>{% for k,v in [('relevance','Pertinence'),('price_asc','Prix croissant'),('price_desc','Prix décroissant'),('rating','Mieux notés'),('popular','Popularité'),('recent','Plus récents')] %}<option value="{{k}}" {{ 'selected' if params.sort==k }}>{{v}}</option>{% endfor %}</select><noscript><button class="btn btn-sm">OK</button></noscript></form></div>
+{% for n in notes %}<div class="flash flash-info">{{ icon('info') }} {{ n }}</div>{% endfor %}
+<p class="small muted">Pertinence : aucun classement payant. Les offres sponsorisées sont signalées.</p>
+{% if offers %}<div class="grid g3">{% for o in offers %}{{ offer_card(o, favs) }}{% endfor %}</div>{{ pagination({'page':page,'pages':pages}, request.endpoint, request.view_args or {}) }}
+{% else %}<div class="card">{{ empty('Aucune offre ne correspond exactement à votre recherche.') }}<ul>{% for s in empty_help %}<li>{{ s }}</li>{% endfor %}</ul><p class="center"><a class="btn btn-outline" href="{{ url_for('public.search') }}">Voir toutes les offres</a></p></div>{% endif %}
+</section></div></div>{% endblock %}

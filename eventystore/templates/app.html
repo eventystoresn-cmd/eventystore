@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import icon %}
+{#- Gabarit des espaces connectés : menu latéral selon le rôle. -#}
+{% macro nav(url, ic, label, key, count=0) -%}
+<a href="{{ url }}" class="{{ 'active' if section == key }}" {{ 'aria-current=page' if section == key }}>{{ icon(ic) }} {{ label }}{% if count %}<span class="cnt">{{ count }}</span>{% endif %}</a>
+{%- endmacro %}
+{% block content %}
+<div class="container app">
+  <aside class="sidebar" aria-label="Menu de l'espace">
+  {% if current_user.is_staff %}
+    {{ nav(url_for('admin.dashboard'), 'dashboard', 'Tableau de bord', 'dash') }}
+    <h4>Comptes</h4>
+    {% if current_user.has_perm('vendors') %}{{ nav(url_for('admin.vendors'), 'shield', 'Prestataires', 'vendors') }}{% endif %}
+    {% if current_user.has_perm('support') %}{{ nav(url_for('admin.users'), 'users', 'Utilisateurs', 'users') }}{% endif %}
+    {% if current_user.has_perm('audit') %}{{ nav(url_for('admin.staff'), 'lock', 'Équipe & rôles', 'staff') }}{% endif %}
+    <h4>Catalogue</h4>
+    {% if current_user.has_perm('catalog') %}{{ nav(url_for('admin.categories'), 'grid', 'Catégories', 'cats') }}{% endif %}
+    {% if current_user.has_perm('offers') %}{{ nav(url_for('admin.offers'), 'tag', 'Annonces', 'offers') }}{% endif %}
+    {% if current_user.has_perm('reviews') %}{{ nav(url_for('admin.reviews'), 'star', 'Avis', 'reviews') }}{% endif %}
+    <h4>Activité</h4>
+    {% if current_user.has_perm('orders_view') %}{{ nav(url_for('admin.orders'), 'package', 'Commandes', 'orders') }}{{ nav(url_for('admin.quotes'), 'file', 'Devis', 'quotes') }}{% endif %}
+    {% if current_user.has_perm('finance') %}{{ nav(url_for('admin.transactions'), 'wallet', 'Transactions', 'tx') }}{% endif %}
+    {% if current_user.has_perm('payouts') %}{{ nav(url_for('admin.payouts'), 'card', 'Reversements', 'payouts') }}{% endif %}
+    {% if current_user.has_perm('commissions') %}{{ nav(url_for('admin.commissions'), 'scale', 'Commissions', 'comm') }}{{ nav(url_for('admin.platform_settings'), 'settings', 'Paramètres', 'settings') }}{% endif %}
+    <h4>Support & contenus</h4>
+    {% if current_user.has_perm('support') %}{{ nav(url_for('admin.tickets'), 'life-buoy', 'Tickets', 'tickets') }}{{ nav(url_for('admin.contact_messages'), 'mail', 'Messages de contact', 'contact') }}{{ nav(url_for('admin.data_requests'), 'lock', 'Demandes RGPD', 'rgpd') }}{% endif %}
+    {% if current_user.has_perm('content') %}{{ nav(url_for('admin.content'), 'edit', 'Contenus', 'content') }}{% endif %}
+    {% if current_user.has_perm('reports') %}{{ nav(url_for('admin.reports'), 'chart', 'Rapports & exports', 'reports') }}{% endif %}
+    {% if current_user.has_perm('audit') %}{{ nav(url_for('admin.audit_log'), 'list', "Journal d'audit", 'audit') }}{{ nav(url_for('admin.outbox'), 'send', 'E-mails sortants', 'outbox') }}{% endif %}
+  {% elif current_user.is_vendor %}
+    {{ nav(url_for('vendor.dashboard'), 'dashboard', 'Tableau de bord', 'dash') }}
+    {{ nav(url_for('vendor.offers'), 'tag', 'Mes offres', 'offers') }}
+    {{ nav(url_for('vendor.calendar'), 'calendar', 'Calendrier', 'calendar') }}
+    {{ nav(url_for('vendor.quotes'), 'file', 'Demandes de devis', 'quotes') }}
+    {{ nav(url_for('vendor.orders'), 'package', 'Commandes', 'orders') }}
+    {{ nav(url_for('messaging.inbox'), 'message', 'Messages', 'messages', unread_messages) }}
+    <h4>Mon activité</h4>
+    {{ nav(url_for('vendor.revenue'), 'wallet', 'Revenus & retraits', 'revenue') }}
+    {{ nav(url_for('vendor.promos'), 'tag', 'Promotions', 'promos') }}
+    {{ nav(url_for('vendor.reviews'), 'star', 'Avis', 'reviews') }}
+    <h4>Mon compte</h4>
+    {{ nav(url_for('vendor.profile'), 'user', 'Profil public', 'profile') }}
+    {{ nav(url_for('vendor.verification'), 'shield', 'Vérification', 'verification') }}
+    {{ nav(url_for('account.tickets'), 'life-buoy', 'Support', 'tickets') }}
+    {{ nav(url_for('account.settings'), 'settings', 'Paramètres', 'settings') }}
+  {% else %}
+    {{ nav(url_for('buyer.dashboard'), 'dashboard', 'Tableau de bord', 'dash') }}
+    {{ nav(url_for('buyer.events'), 'calendar', 'Mes événements', 'events') }}
+    {{ nav(url_for('buyer.quotes'), 'file', 'Devis & négociations', 'quotes') }}
+    {{ nav(url_for('buyer.orders'), 'package', 'Réservations', 'orders') }}
+    {{ nav(url_for('buyer.cart'), 'cart', 'Panier', 'cart', cart_count) }}
+    {{ nav(url_for('messaging.inbox'), 'message', 'Messages', 'messages', unread_messages) }}
+    <h4>Suivi</h4>
+    {{ nav(url_for('buyer.payments_list'), 'wallet', 'Paiements & reçus', 'payments') }}
+    {{ nav(url_for('buyer.favorites'), 'heart', 'Favoris', 'favorites') }}
+    <h4>Mon compte</h4>
+    {{ nav(url_for('account.tickets'), 'life-buoy', 'Support & réclamations', 'tickets') }}
+    {{ nav(url_for('account.settings'), 'settings', 'Paramètres', 'settings') }}
+  {% endif %}
+  </aside>
+  <div class="app-main">{% block app %}{% endblock %}</div>
+</div>
+{% endblock %}

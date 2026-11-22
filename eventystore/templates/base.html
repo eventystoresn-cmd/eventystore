@@ -1,0 +1,98 @@
+{% from '_macros.html' import icon, csrf %}<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="theme-color" content="#4B00A5">
+<title>{% block title %}EventyStore — Planifiez • Réservez • Célébrez{% endblock %}</title>
+<meta name="description" content="{% block description %}EventyStore : la marketplace des prestataires et équipements événementiels au Sénégal. Comparez, négociez et réservez.{% endblock %}">
+<link rel="canonical" href="{{ config.SITE_URL.rstrip('/') }}{{ request.path }}">
+<meta property="og:site_name" content="EventyStore"><meta property="og:type" content="website"><meta property="og:locale" content="fr_SN"><meta property="og:title" content="{{ self.title()|striptags|trim }}"><meta property="og:description" content="{{ self.description()|trim }}"><meta property="og:image" content="{{ config.SITE_URL.rstrip('/') }}{{ url_for('static', filename='brand/logo-signature.png') }}">
+<link rel="icon" href="{{ url_for('static', filename='brand/favicon.ico') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='brand/favicon-32.png') }}">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='brand/favicon-180.png') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body>
+<a class="skip" href="#contenu">Aller au contenu</a>
+{% if setting('demo_mode') == '1' %}<div class="demo-ribbon">Mode démonstration — toutes les données (prestataires, offres, avis) sont fictives. Les visuels sont des illustrations de substitution.</div>{% endif %}
+{% for b in site_banners or [] %}<div class="banner">{{ b.text }}{% if b.link %} <a href="{{ b.link }}">{{ b.link_label or 'En savoir plus' }}</a>{% endif %}</div>{% endfor %}
+<header class="site-header">
+  <div class="container bar">
+    <a class="logo" href="{{ url_for('public.home') }}" aria-label="EventyStore — accueil"><img src="{{ url_for('static', filename='brand/logo.png') }}" alt="EventyStore" width="136" height="44"></a>
+    <nav class="main-nav" aria-label="Navigation principale">
+      <div class="dropdown"><button class="nav-link icon-btn" style="width:auto;padding:0 .7rem;font:500 .92rem var(--font)" data-dropdown="cats" aria-expanded="false">Catégories {{ icon('chevron-down') }}</button>
+        <div class="dropdown-menu" style="left:0;right:auto;min-width:260px">
+          {% for c in nav_categories %}<a href="{{ url_for('public.category', slug=c.slug) }}">{{ icon(c.icon) }} {{ c.name }}</a>{% endfor %}
+          <a href="{{ url_for('public.categories') }}"><strong>Toutes les catégories</strong></a>
+        </div></div>
+      <a href="{{ url_for('public.how_it_works') }}">Comment ça marche ?</a>
+      <a href="{{ url_for('public.become_vendor') }}">Devenir prestataire</a>
+      <a href="{{ url_for('public.help_center') }}">Aide</a>
+    </nav>
+    <div class="header-actions">
+      <a class="icon-btn hide-xs" href="{{ url_for('public.search') }}" aria-label="Rechercher">{{ icon('search') }}</a>
+      {% if current_user.is_authenticated %}
+        {% if current_user.is_buyer %}<a class="icon-btn" href="{{ url_for('buyer.cart') }}" aria-label="Panier">{{ icon('cart') }}{% if cart_count %}<span class="dot">{{ cart_count }}</span>{% endif %}</a>{% endif %}
+        {% if not current_user.is_staff %}<a class="icon-btn" href="{{ url_for('messaging.inbox') }}" aria-label="Messages">{{ icon('message') }}<span class="dot" id="badge-msg" {{ 'hidden' if not unread_messages }}>{{ unread_messages }}</span></a>{% endif %}
+        <div class="dropdown"><button class="icon-btn" data-dropdown="notifs" aria-label="Notifications" aria-expanded="false">{{ icon('bell') }}<span class="dot" id="badge-notif" {{ 'hidden' if not unread_notifications }}>{{ unread_notifications }}</span></button>
+          <div class="dropdown-menu" style="min-width:300px"><div id="notif-list"></div><a href="{{ url_for('account.notifications') }}">Voir toutes les notifications</a></div></div>
+        <div class="dropdown"><button class="btn btn-outline btn-sm" data-dropdown="user" aria-expanded="false">{{ icon('user') }}<span class="hide-sm">{{ current_user.first_name }}</span></button>
+          <div class="dropdown-menu">
+            <a href="{{ url_for('auth.after_login') }}">{{ icon('dashboard') }} Mon espace</a>
+            <a href="{{ url_for('account.settings') }}">{{ icon('settings') }} Paramètres</a>
+            <a href="{{ url_for('account.tickets') }}">{{ icon('life-buoy') }} Support</a>
+            <form method="post" action="{{ url_for('auth.logout') }}">{{ csrf() }}<button type="submit">{{ icon('logout') }} Déconnexion</button></form>
+          </div></div>
+      {% else %}
+        <a class="btn btn-ghost btn-sm hide-sm" href="{{ url_for('auth.login') }}">Connexion</a>
+        <a class="btn btn-sm" href="{{ url_for('auth.register') }}">Inscription</a>
+      {% endif %}
+      <button class="icon-btn menu-toggle" aria-label="Menu" aria-expanded="false">{{ icon('menu') }}</button>
+    </div>
+  </div>
+  <nav class="mobile-nav" aria-label="Menu mobile">
+    {% for c in nav_categories %}<a href="{{ url_for('public.category', slug=c.slug) }}">{{ icon(c.icon) }} {{ c.name }}</a>{% endfor %}
+    <a href="{{ url_for('public.how_it_works') }}">{{ icon('info') }} Comment ça marche ?</a>
+    <a href="{{ url_for('public.become_vendor') }}">{{ icon('briefcase') }} Devenir prestataire</a>
+    <a href="{{ url_for('public.help_center') }}">{{ icon('life-buoy') }} Aide</a>
+    {% if not current_user.is_authenticated %}<a href="{{ url_for('auth.login') }}">{{ icon('user') }} Connexion</a>{% endif %}
+  </nav>
+</header>
+
+<main id="contenu">
+  {% with msgs = get_flashed_messages(with_categories=true) %}{% if msgs %}
+  <div class="container flashes">{% for cat, m in msgs %}<div class="flash flash-{{ cat if cat in ['success','danger','warning','info'] else 'info' }}" role="{{ 'alert' if cat in ['danger','warning'] else 'status' }}">{{ m }}</div>{% endfor %}</div>
+  {% endif %}{% endwith %}
+  {% if current_user.is_authenticated and not current_user.email_verified and not current_user.is_staff %}
+  <div class="container"><div class="flash flash-warning">{{ icon('mail') }} Confirmez votre adresse e-mail pour réserver, demander des devis ou publier.
+    <form method="post" action="{{ url_for('auth.resend_verification') }}" style="display:inline">{{ csrf() }}<button class="link-btn">Renvoyer l'e-mail</button></form>
+    {% if env != 'production' %}· <a href="{{ url_for('public.dev_outbox') }}">Voir la boîte d'envoi (dev)</a>{% endif %}</div></div>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+{% if compare_ids %}<div class="compare-bar show"><span>{{ compare_ids|length }} offre(s) à comparer</span><a class="btn btn-accent btn-sm" href="{{ url_for('public.compare') }}">Comparer</a></div>{% endif %}
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="cols">
+      <div><img src="{{ url_for('static', filename='brand/logo-signature.png') }}" alt="EventyStore — Planifiez, Réservez, Célébrez" width="200" height="79" style="margin-bottom:.8rem">
+        <p>La marketplace qui simplifie l'organisation de vos événements au Sénégal.</p></div>
+      <div><h4>Catégories</h4><ul>{% for c in nav_categories[:6] %}<li><a href="{{ url_for('public.category', slug=c.slug) }}">{{ c.name }}</a></li>{% endfor %}</ul></div>
+      <div><h4>EventyStore</h4><ul>
+        <li><a href="{{ url_for('public.how_it_works') }}">Comment ça marche ?</a></li><li><a href="{{ url_for('public.become_vendor') }}">Espace prestataire</a></li>
+        <li><a href="{{ url_for('public.about') }}">À propos</a></li><li><a href="{{ url_for('public.faq') }}">FAQ</a></li><li><a href="{{ url_for('public.help_center') }}">Centre d'aide</a></li><li><a href="{{ url_for('public.contact') }}">Contact</a></li></ul></div>
+      <div><h4>Informations</h4><ul>
+        <li><a href="{{ url_for('public.page', slug='conditions-generales') }}">Conditions générales</a></li><li><a href="{{ url_for('public.page', slug='confidentialite') }}">Confidentialité</a></li>
+        <li><a href="{{ url_for('public.page', slug='cookies') }}">Cookies</a></li><li><a href="{{ url_for('public.page', slug='annulation') }}">Politique d'annulation</a></li><li><a href="{{ url_for('public.page', slug='mentions-legales') }}">Mentions légales</a></li></ul>
+        {% if setting('support_email') %}<p class="small" style="margin-top:.8rem">{{ icon('mail') }} {{ setting('support_email') }}<br>{{ setting('support_hours') }}</p>{% endif %}</div>
+    </div>
+    <div class="legal">© {{ today().year }} EventyStore · Paiements en FCFA · Heure de Dakar{% if payment_mode == 'sandbox' %} · <strong>Paiement en mode test (aucun argent réel)</strong>{% endif %}</div>
+  </div>
+</footer>
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</body>
+</html>
